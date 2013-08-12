@@ -1,4 +1,5 @@
 #!/bin/bash
+# experimental change!
 rst2html.py README.rst > README.html
 rm -rf docs
 mkdir docs 
