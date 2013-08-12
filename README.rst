@@ -72,12 +72,12 @@ The data for the fit_neuron package is then installed as follows::
 Testing
 ------------
 
-The main testing script for fit_neuron can be run as follows: 
+The main testing script for fit_neuron can be run as follows:: 
 
->>> import fit_neuron
->>> fit_neuron.tests.run_single_test()
+	python -m fit_neuron.tests.test
 
 
+This will create a directory called *test_output_figures* in the current directory.  
 
 Feel free to contact me at nicodjimenez [at] gmail.com if you have any questions / comments.  
 

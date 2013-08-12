@@ -1,7 +1,7 @@
 Installation Guide
 =====================
 This guide will walk you through the steps necessary to get 
-the package up and running
+the package up and running.
 
 Quick Start
 ----------------
@@ -24,10 +24,10 @@ Quick Start
 		Done unzipping data files!
 		Unzipped directory: /usr/local/lib/python2.7/dist-packages/fit_neuron-0.0.3-py2.7.egg/fit_neuron/data/DataTextFiles
 
- #. Run the tests:
+ #. Run the tests::
      
-	>>> import fit_neuron
-	>>> fit_neuron.tests.run_single_test()
+		python -m fit_neuron.tests.test
+
 	 		
  		 
 Required Dependencies

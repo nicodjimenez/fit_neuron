@@ -1,6 +1,6 @@
 """
 Allows the user to easily load sample patch clamp recordings
-that were previously downloaded by :mod:`dl_neuron_data`. 
+that were previously downloaded by :mod:`fit_neuron.data.dl_neuron_data`. 
 
 In addition, the user may use :func:`is_noise` to filter current injections 
 that are above an auto-correlation cutoff. 

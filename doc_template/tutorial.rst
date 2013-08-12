@@ -9,7 +9,7 @@ Running a Test Script
 
 To run a test script, do the following: 
 
->>> fit_neuron.tests.run_single_test()
+	python -m fit_neuron.tests.test
 
 
 Contents of Test Script 
