@@ -15,6 +15,6 @@ rm -rf docs/_build/html/figures
 rm -rf docs/_build/html/json_files
 rm -rf docs/_build/html/pickle_files
 rm -rf docs/_build/html/stats
-
+# now making a different change in master branch 
 
 
