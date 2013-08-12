@@ -17,23 +17,40 @@ of synchrony between spike trains.
 :Version: 0.0.3
 :Authors: - Nicolas D. Jimenez
 
+Links 
+----------
+
+1) **Pypi** 
+
+The latest stable version is available to download at: https://pypi.python.org/pypi/fit_neuron.
+
+2)  **GitHub**
+
+The latest development version is available at: https://github.com/nicodjimenez/fit_neuron.  All relevant contributions are welcome 
+and fast review of pull requests is guaranteed.  
+
+3)  **Documentation**   
+
+Sphinx documentation is available at: http://pythonhosted.org/fit_neuron/.
+
+
 Dependencies
 -------------
 
 1) **Numpy** 
 
-The standard python module for matrix and vector computations: https://pypi.python.org/pypi/numpy
+The standard python module for matrix and vector computations: https://pypi.python.org/pypi/numpy.
 
 2) **Scipy** 
 
-The standard python module for statistical analysis: http://www.scipy.org/install.html
+The standard python module for statistical analysis: http://www.scipy.org/install.html.
 
 3) **Matplotlib**
 
-The standard python module for data visualization: http://matplotlib.org/users/installing.html
+The standard python module for data visualization: http://matplotlib.org/users/installing.html.
 
-Installation
-----------------
+Installation 
+-----------------------
 
 The fit_neuron package can be installed as follows::
 
@@ -62,8 +79,7 @@ The main testing script for fit_neuron can be run as follows:
 
 
 
-Contact me at nicodjimenez [at] gmail.com if you have any questions / comments.  The project will 
-soon be available for forking on GitHub.     
+Feel free to contact me at nicodjimenez [at] gmail.com if you have any questions / comments.  
 
 References
 ------------------
