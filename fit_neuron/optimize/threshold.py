@@ -13,9 +13,6 @@ from numpy import exp, Inf, floor, ceil, zeros
 import multiprocessing
 from fit_neuron import data
 
-# fortran routine 
-from fast_grad_hess import fast_grad_hess as fgs
-
 # this list determines the endpoints of the intervals that are used 
 # to specify the shape of the dynamic threshold 
 T_BIN_DEFAULT = [0.0001,0.0003,0.0006,0.001,0.0015,0.002,0.003,0.004,0.005,0.01,0.015,0.02,0.025,0.03,0.05,0.08,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.7,0.9,1.2]
@@ -25,10 +22,6 @@ T_BIN_DEFAULT = [0.0001,0.0003,0.0006,0.001,0.0015,0.002,0.003,0.004,0.005,0.01,
 TIME_CONST_DEFAULT = [1,2,5]
 
 def get_grad_and_hessian((thresh_param,X_cat)):
-    cur_tuple = fgs(thresh_param,X_cat)
-    return cur_tuple
-
-def old_get_grad_and_hessian((thresh_param,X_cat)):
     """
     Takes a subset of the data and returns gradient and hessian for this 
     subset of the data.  This function is called by par_calc_log_like_update
