@@ -39,12 +39,11 @@ def run_single_test(output_dir=OUTPUT_DIR):
         neuron = fit_neuron.optimize.fit_neuron(input_current_list=input_current_list,
                                          membrane_voltage_list=membrane_voltage_list,
                                          dt=dt,
-                                         process_ct=None,
+                                         process_ct=10,
                                          max_lik_iter_max=25,
                                          stopping_criteria=0.01,
                                          sic_list=sic_list,
-                                         volt_nonlin_fcn = volt_nonlin_fcn
-                                         )
+                                         volt_nonlin_fcn = volt_nonlin_fcn)
 
         # -------------- SAVING RESULTS  -----------------
         

@@ -12,6 +12,10 @@ from numpy import linalg
 from numpy import exp, Inf, floor, ceil, zeros 
 import multiprocessing
 from fit_neuron import data
+
+# fortran routine 
+from fast_grad_hess import fast_grad_hess as fgs
+
 # this list determines the endpoints of the intervals that are used 
 # to specify the shape of the dynamic threshold 
 T_BIN_DEFAULT = [0.0001,0.0003,0.0006,0.001,0.0015,0.002,0.003,0.004,0.005,0.01,0.015,0.02,0.025,0.03,0.05,0.08,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.7,0.9,1.2]
@@ -21,6 +25,10 @@ T_BIN_DEFAULT = [0.0001,0.0003,0.0006,0.001,0.0015,0.002,0.003,0.004,0.005,0.01,
 TIME_CONST_DEFAULT = [1,2,5]
 
 def get_grad_and_hessian((thresh_param,X_cat)):
+    cur_tuple = fgs(thresh_param,X_cat)
+    return cur_tuple
+
+def old_get_grad_and_hessian((thresh_param,X_cat)):
     """
     Takes a subset of the data and returns gradient and hessian for this 
     subset of the data.  This function is called by par_calc_log_like_update
@@ -44,7 +52,9 @@ def get_grad_and_hessian((thresh_param,X_cat)):
             continue 
         
         if t+1 < data_len:
+            # we are going to look one step ahead so make sure this element exists
             if np.isnan(X_cat[t+1,0]):
+                # the next index corresponds to a spike index
                 grad_vec = grad_vec + X_thresh   
                 continue 
         
@@ -65,22 +75,21 @@ def par_calc_log_like_update(thresh_param,X_cat_split,process_ct):
     the gradient and hessian of the whole time series, then
     performs Newon update.  
     """
+    
+    theta_len = len(thresh_param)
+    thresh_param = thresh_param.reshape((1,theta_len))
+    
     pool = multiprocessing.Pool(processes=process_ct)
     inputs = [(thresh_param[:],X_cat_short) for X_cat_short in X_cat_split]
     
-    results = pool.map(get_grad_and_hessian, inputs)
-    #results = pool.map(wrap_get_grad_and_hessian, inputs)
-    
+    results = pool.map(get_grad_and_hessian, inputs)    
     pool.close()
     pool.join()
     
-    grad_sum = results[0][0]
-    hess_sum = results[0][1]
-    for r in results[1:]:
-        grad_sum += r[0]
-        hess_sum += r[1]
-    
-    theta_new = thresh_param - np.linalg.pinv(hess_sum).dot(grad_sum.T).T  
+    grad_sum = reduce(lambda x,y: x[0] + y[0],results)
+    hess_sum = reduce(lambda x,y: x[1] + y[1],results)
+
+    theta_new = thresh_param - np.linalg.pinv(hess_sum).dot(grad_sum.T).T      
     return grad_sum,theta_new[0] 
 
 class StochasticThresh():

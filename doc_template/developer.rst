@@ -26,8 +26,8 @@ Quick Start
 	current python path.  If the user uses ``pip`` to install ``fit_neuron``, the path to the
 	:mod:`fit_neuron.data` module will be located in a ``dist-packages`` system directory 
 	reserved to warehouse all third party python modules.  On the other hand, if the user uses 
-	``git clone`` to install ``fit_neuron``, the :mod:`fit_neuron.data` module will simply be located at 
-	``.fit_neuron/data``.   
+	``git clone`` to install ``fit_neuron``, the :mod:`fit_neuron.data` module will simply be located in the 
+	``fit_neuron/data`` directory.  
 
 #. 	Run test script:: 
 
