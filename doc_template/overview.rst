@@ -4,7 +4,6 @@ A Guide to the Optimize Package
 
 .. Contents::
 
-
 Overview
 -------------------
 

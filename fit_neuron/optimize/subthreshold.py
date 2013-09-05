@@ -50,7 +50,7 @@ class Voltage():
                  sic_list=[],
                  volt_nonlin_fcn=None,
                  dt=0.0001,
-                 Vr=-55,
+                 Vr=-70,
                  t_ref=0.004):
         
         [sic.reset() for sic in sic_list]

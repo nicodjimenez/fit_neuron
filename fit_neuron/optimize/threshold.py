@@ -33,7 +33,6 @@ def get_grad_and_hessian((thresh_param,X_cat)):
     thresh parameters via a Newton-Raphson step.
     """
     theta_len = len(thresh_param)
-    thresh_param = thresh_param.reshape((1,theta_len))
     grad_vec = np.zeros( (1,theta_len) ) 
     hess_mat = np.zeros( (theta_len,theta_len) ) 
     data_len = len(X_cat)
@@ -55,7 +54,6 @@ def get_grad_and_hessian((thresh_param,X_cat)):
         grad_vec = grad_vec - X_thresh * exp_val
         hess_mat = hess_mat - exp_val * X_thresh.T.dot(X_thresh)
 
-    cur_tuple = (grad_vec,hess_mat) 
     return (grad_vec,hess_mat) 
 
 def par_calc_log_like_update(thresh_param,X_cat_split,process_ct):
@@ -73,11 +71,11 @@ def par_calc_log_like_update(thresh_param,X_cat_split,process_ct):
     thresh_param = thresh_param.reshape((1,theta_len))
     
     pool = multiprocessing.Pool(processes=process_ct)
-    inputs = [(thresh_param[:],X_cat_short) for X_cat_short in X_cat_split]
+    inputs = [(thresh_param[:],X_cat_short.T) for X_cat_short in X_cat_split]
     
     results = pool.map(get_grad_and_hessian, inputs)    
-    pool.close()
-    pool.join()
+    #pool.close()
+    #pool.join()
     
     grad_sum = reduce(lambda x,y: x[0] + y[0],results)
     hess_sum = reduce(lambda x,y: x[1] + y[1],results)
