@@ -12,7 +12,7 @@ Contents:
    :maxdepth: 4
 
    user
-   developer 
+   developer
    tutorial
    overview
 

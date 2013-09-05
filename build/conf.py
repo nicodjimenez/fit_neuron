@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.abspath('../'))
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 #extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode','sphinx.ext.mathbase','matplotlib.sphinxext.mathmpl']
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode','sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode','sphinx.ext.pngmath','sphinxcontrib.tikz']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -182,7 +182,10 @@ latex_elements = {
 #'pointsize': '10pt',
 
 # Additional stuff for the LaTeX preamble.
-#'preamble': '',
+'preamble': r"""
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+"""
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

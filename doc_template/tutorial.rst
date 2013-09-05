@@ -1,13 +1,71 @@
 Tutorial
 =====================
+
+.. Contents:: 
+
 This guide will show you how :mod:`fit_neuron` can be used to estimate 
 a model from raw data, and how this model can then be evaluated against the 
 raw data it is supposed to fit.
 
+Basic Approach 
+----------------------
+
+We briefly summarize the basic approach taken by this package to estimate 
+models from data and then evaluate them.  
+
+Estimating Neurons
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The approach taken by the `fit_neuron` package to fitting neurons is shown 
+in the following diagram:
+
+.. tikz:: [node distance = 4cm, auto]
+	\node [rectangle, draw, fill=blue!20, 
+    text width=7em, text centered, rounded corners, minimum height=4em] (data) {Input/Output Data};
+	\node [rectangle, draw, fill=blue!20, 
+    text width=7em, text centered, rounded corners, minimum height=4em,right of=data] (fcn) {Optimization Function};
+	\node [rectangle, draw, fill=blue!20, 
+    text width=7em, text centered, rounded corners, minimum height=4em,below of=fcn] (options) {User Options};
+	\node [rectangle, draw, fill=blue!20, 
+    text width=7em, text centered, rounded corners, minimum height=4em,right of=fcn] (object) {Model Object};
+    \draw [->,thick] (data) -- (fcn);
+    \draw [->,thick] (options) -- (fcn);
+    \draw [->,thick] (fcn) -- (object);
+
+The computations done by `Optimization Function` shown above are implemented by the :func:`fit_neuron.optimize.fit_gLIF.fit_neuron` function, 
+which wraps methods for spike processing, subthreshold estimation, and threshold estimation into a single function 
+that returns a model object.  
+
+Using Model Objects 
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A model object is used much in the same way an experimentalist interacts with a patch-clamped neuron.  
+The key method used is the :meth:`fit_neuron.optimize.neuron_base_obj.Neuron.update` method, which 
+uses the current value of the input current injection to update the state of the neuron by a time step :math:`dt`.  
+The value returned is the new value of the membrane voltage.     
+
+.. tikz:: [node distance = 4cm, auto]
+	\node [rectangle, draw, fill=blue!20, 
+    text width=7em, text centered, rounded corners, minimum height=4em] (input) {$I_e(t)$};
+	\node [rectangle, draw, fill=blue!20, 
+    text width=7em, text centered, rounded corners, minimum height=4em,right of=input] (fcn) {model.update()};
+	\node [rectangle, draw, fill=blue!20, 
+    text width=7em, text centered, rounded corners, minimum height=4em,right of=fcn] (return) {$V(t+\Delta t)$};
+    \draw [->,thick] (input) -- (fcn);
+    \draw [->,thick] (fcn) -- (return);
+
+.. note:: 
+	There is no explicit method to determine whether the neuron is currently spiking. 
+	The convention used is that the model returns a :mod:`numpy` typed value of :math:`V = \text{NaN}`
+	whenever the neuron is spiking.  
+	
+Creating Neurons from Scratch
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Running a Test Script 
 -----------------------------
 
-To run a test script, do the following: 
+To run a test script, do the following:: 
 
 	python -m fit_neuron.tests.test
 
