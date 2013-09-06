@@ -9,7 +9,7 @@ Welcome to fit_neuron's documentation!
 Contents:
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    user
    developer

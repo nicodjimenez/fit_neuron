@@ -13,88 +13,108 @@ from numpy import exp, Inf, floor, ceil, zeros
 import multiprocessing
 from fit_neuron import data
 
-# this list determines the endpoints of the intervals that are used 
-# to specify the shape of the dynamic threshold 
-T_BIN_DEFAULT = [0.0001,0.0003,0.0006,0.001,0.0015,0.002,0.003,0.004,0.005,0.01,0.015,0.02,0.025,0.03,0.05,0.08,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.7,0.9,1.2]
-
-# defines time constants of voltage chasing currents
-#TIME_CONST_DEFAULT = [5.0,-5.0]
-TIME_CONST_DEFAULT = [1,2,5]
-
 def get_grad_and_hessian((thresh_param,X_cat)):
     """
-    Takes a subset of the data and returns gradient and hessian for this 
-    subset of the data.  This function is called by par_calc_log_like_update
+    Takes a subset of the data and returns gradient and hessian for this
+    subset of the data. This function is called by par_calc_log_like_update
     and allows this function to work in parallel, map-reduce style.
-    
-    Computes gradient vector as well as Hessian matrix of 
-    log likelihood w.r.t. threshold parameters, evaluated 
-    at thresh_param.  The grad and hess can then be used to update
+    Computes gradient vector as well as Hessian matrix of
+    log likelihood w.r.t. threshold parameters, evaluated
+    at thresh_param. The grad and hess can then be used to update
     thresh parameters via a Newton-Raphson step.
     """
     theta_len = len(thresh_param)
-    grad_vec = np.zeros( (1,theta_len) ) 
-    hess_mat = np.zeros( (theta_len,theta_len) ) 
+    thresh_param = thresh_param.reshape((1,theta_len))
+    grad_vec = np.zeros( (1,theta_len) )
+    hess_mat = np.zeros( (theta_len,theta_len) )
     data_len = len(X_cat)
     
     for t in range(data_len):
         X_thresh = X_cat[t,:].reshape((1,theta_len))
         
         if np.isnan(X_thresh[0,0]):
-            continue 
+            continue
         
         if t+1 < data_len:
-            # we are going to look one step ahead so make sure this element exists
             if np.isnan(X_cat[t+1,0]):
-                # the next index corresponds to a spike index
-                grad_vec = grad_vec + X_thresh   
-                continue 
+                grad_vec = grad_vec + X_thresh
+                continue
         
-        exp_val = np.exp(thresh_param.dot(X_thresh.T))[0][0] 
+        exp_val = np.exp(thresh_param.dot(X_thresh.T))[0][0]
         grad_vec = grad_vec - X_thresh * exp_val
         hess_mat = hess_mat - exp_val * X_thresh.T.dot(X_thresh)
 
-    return (grad_vec,hess_mat) 
+    cur_tuple = (grad_vec,hess_mat)
+    return cur_tuple 
 
 def par_calc_log_like_update(thresh_param,X_cat_split,process_ct):
     """
-    Parallel version of Newton update.  This method is called 
-    by :func:`max_likelihood`.  
-    
-    The function splits data into chunks, passes chuncks to 
-    different processors, collects the result to obtain 
+    Parallel version of Newton update. This method is called
+    by :func:`max_likelihood`.
+    The function splits data into chunks, passes chuncks to
+    different processors, collects the result to obtain
     the gradient and hessian of the whole time series, then
-    performs Newon update.  
+    performs Newon update.
     """
-    
-    theta_len = len(thresh_param)
-    thresh_param = thresh_param.reshape((1,theta_len))
-    
     pool = multiprocessing.Pool(processes=process_ct)
-    inputs = [(thresh_param[:],X_cat_short.T) for X_cat_short in X_cat_split]
+    inputs = [(thresh_param[:],X_cat_short) for X_cat_short in X_cat_split]
     
-    results = pool.map(get_grad_and_hessian, inputs)    
-    #pool.close()
-    #pool.join()
+    results = pool.map(get_grad_and_hessian, inputs)
     
-    grad_sum = reduce(lambda x,y: x[0] + y[0],results)
-    hess_sum = reduce(lambda x,y: x[1] + y[1],results)
-
-    theta_new = thresh_param - np.linalg.pinv(hess_sum).dot(grad_sum.T).T      
+    pool.close()
+    pool.join()
+    
+    grad_sum = results[0][0]
+    hess_sum = results[0][1]
+    for r in results[1:]:
+        grad_sum += r[0]
+        hess_sum += r[1]
+    
+    theta_new = thresh_param - np.linalg.pinv(hess_sum).dot(grad_sum.T).T
     return grad_sum,theta_new[0] 
 
 class StochasticThresh():
-    """
-    Takes t_bins and creates an actionable threshold model
+    r"""
+    Class for the threshold component of a spiking neuron.  The main functionality
+    of this class is to determine spike times stochastically. 
     
-    :keyword t_bins: a list that defines the end points of the intervals used to define indicator functions.  
-    :keyword volt_adapt_time_const: a list that defines the time constants of voltage chasing currents
-    :keyword thresh_init: initial value of the threshold
+    :param dt: time step.
+    :keyword t_bins: a list that defines the :math:`b_i` that define indicator functions :math:`I_{[0,b_i]}(t)` (see below).  
+    :keyword volt_adapt_time_const: a list that defines the time constants :math:`r_i` of the voltage chasing currents (see below).
     :keyword t_hist: spiking history of neuron, how long ago were the last spikes? 
+    
+    The stochastic neuron has the following *hazard rate*: 
+    
+    .. math:: 
+        h(t) = \exp \left({\bf w}_t^{\top} {\bf X}_t (t) \right)
+    
+    where 
+    
+    .. math:: 
+        {\bf X}_t (t) = [1,V(t),I_1(t),\hdots,I_m(t),Q_1(t),\hdots,Q_l(t)]^{\top}.
+    
+    where the :math:`I_i(t) = I_{[0,b_i]}(t)` parameters are the indicator variables, and 
+    the :math:`Q_j(t)` parameters are probability currents which shall be referred to as 
+    *voltage chasing currents*.  These currents give the stochastic spike emission process a component
+    that adapts to the history of the voltage.  The equations used for the voltage chasing currents 
+    are: 
+    
+    .. math:: 
+        \frac{dQ_i}{dt} = r_i (V - Q_i)
+        
+    After the neuron spikes, the voltage chasing currents are reset to the value of the voltage 
+    immediately following the spike: 
+    
+    .. math:: 
+        Q_i \gets V_r
+        
+    The hazard rate is computed at each time step and compared to a uniformly distributed random number to 
+    determine whether the neuron spikes here.  The computation of :math:`{\bf X}_t (t)` 
+    at each time step is done by :meth:`update_X_arr`, while the inner product with the parameter vector 
+    :math:`{\bf w}_t` and the random decision of whether a spike occurs or not is taken by :meth:`update`.
     """
-    def __init__(self,t_bins=T_BIN_DEFAULT,
-                      volt_adapt_time_const=TIME_CONST_DEFAULT,
-                      t_hist=[],
+    def __init__(self,t_bins,
+                      volt_adapt_time_const=[],
                       dt=0.0001,
                       thresh_param=None,
                       thresh_param_dict={}):
@@ -104,7 +124,7 @@ class StochasticThresh():
         self.bin_count = len(t_bins)
         #: max amount of time during which we care about previous spikes, see self.update
         self.t_max = t_bins[-1]
-        self.t_hist = t_hist
+        self.t_hist = []
         self.X_arr = None 
         
         #: these are the time constants of the voltage chasing parameters
@@ -263,7 +283,7 @@ class StochasticThresh():
         
         if self.thresh_param == None: 
             raise ValueError("Threshold parameter must be specified in self.thresh_param in order to compute spike probability!")
-
+        
         hazard = exp(self.thresh_param.dot(X_arr)) 
         
         # TO DO: replace this approximation with:
@@ -310,7 +330,7 @@ def max_likelihood(X_thresh_list,spike_ind_list,thresh_init,process_ct=None,iter
     if process_ct == None:
         process_ct = multiprocessing.cpu_count()
     
-    print "Process ct: " + str(process_ct)
+    #print "Process ct: " + str(process_ct)
     
     # splitting data into chuncks
     X_len = len(X_arr_cat)
@@ -324,7 +344,7 @@ def max_likelihood(X_thresh_list,spike_ind_list,thresh_init,process_ct=None,iter
     for _ in range(iter_max):
         [grad,cur_param] = par_calc_log_like_update(cur_param, X_cat_split,process_ct)
         grad_norm = np.linalg.norm(grad)
-        print "Norm of log likelihood gradient: " + str(grad_norm)
+        #print "Norm of log likelihood gradient: " + str(grad_norm)
         
         if grad_norm < stopping_criteria: 
             break
@@ -378,7 +398,7 @@ def estimate_thresh_parameters(subthresh_obj,
     :returns: array of threshold parameters
     """
         
-    print "Computing X_thresh..."
+    print "Estimating threshold parameters..."
     param_ct = thresh_obj.param_ct
     
     if thresh_param_init == None:     

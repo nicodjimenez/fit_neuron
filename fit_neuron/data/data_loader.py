@@ -66,7 +66,7 @@ def is_noise(input_current,correlation_cutoff=0.8):
     else: 
         return False 
     
-def load_neuron_files(neuron_num,file_num_list,show_print=True,data_dir=None):
+def load_neuron_files(neuron_num,file_num_list,show_print=False,data_dir=None):
     """
     This function loads and returns data specified by the user.  
     
@@ -82,6 +82,8 @@ def load_neuron_files(neuron_num,file_num_list,show_print=True,data_dir=None):
     Loaded new data: stim2.txt
     Loaded new data: stim3.txt
     """
+    
+    print "Loading data..."
     
     if data_dir == None:
         data_dir = DATA_DIR
@@ -116,7 +118,7 @@ def load_neuron_files(neuron_num,file_num_list,show_print=True,data_dir=None):
     return file_id_list,input_current_list,membrane_voltage_list,time_delta
     
     
-def load_neuron_data(neuron_num,input_type="all",max_file_ct=np.Inf,data_dir=None): 
+def load_neuron_data(neuron_num,input_type="all",max_file_ct=np.Inf,data_dir=None,verbose=False): 
     """
     This function loads and returns a subset of the data as defined by the 
     input parameters. 
@@ -152,6 +154,8 @@ def load_neuron_data(neuron_num,input_type="all",max_file_ct=np.Inf,data_dir=Non
     Loaded new data: stim4.txt
     Loaded new data: stim5.txt
     """   
+    
+    print "Loading data..."
     
     if data_dir == None:
         data_dir = DATA_DIR
@@ -196,8 +200,9 @@ def load_neuron_data(neuron_num,input_type="all",max_file_ct=np.Inf,data_dir=Non
         input_current_list.append(input_current)  
         new_txt_file = os.path.split(stim_txt_file)[-1]
         file_id_list.append(new_txt_file)
-            
-        print "Loaded new data: " + new_txt_file
+        
+        if verbose:
+            print "Loaded new data: " + new_txt_file
             
     return file_id_list,input_current_list,membrane_voltage_list,time_delta
 

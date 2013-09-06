@@ -275,6 +275,8 @@ def estimate_volt_parameters(subthresh_obj,processed_data):
     vector for the subthreshold object. 
     """
     
+    print "Estimating subthreshold parameters..."
+    
     X_sum = None 
     Y_sum = None 
     

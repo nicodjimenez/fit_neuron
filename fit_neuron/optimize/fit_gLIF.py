@@ -45,7 +45,7 @@ def fit_neuron(input_current_list=None,
     Fits an actionable neuron to the data provided.
     
     :param input_current_list: list of arrays of recorded current injections. 
-    :param membrane_voltage_list: list of arrays of recorded membrane voltages.
+    :param membrane_voltage_list: list of arrays of recorded membrane voltages corresponding to :attr:`input_current_list` input.
     :param dt: time step. 
     :param volt_nonlin_fcn: voltage nonlinearity function (see :class:`fit_neuron.optimize.subthreshold.Voltage`).
     :param sic_list: list of spike induced current objects (see :mod:`fit_neuron.optimize.sic_lib`).
@@ -82,7 +82,6 @@ def fit_neuron(input_current_list=None,
     
     processed_data = data.raw_2_processed(raw_data,look_behind=look_behind)
     
-    print "Estimating subthreshold parameters..."
     subthresh_param_arr = subthreshold.estimate_volt_parameters(subthresh_obj, processed_data)
     
     #print "Subthresh arr: " + str(subthresh_param_arr)

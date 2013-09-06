@@ -34,7 +34,7 @@ in the following diagram:
 
 The computations done by `Optimization Function` shown above are implemented by the :func:`fit_neuron.optimize.fit_gLIF.fit_neuron` function, 
 which wraps methods for spike processing, subthreshold estimation, and threshold estimation into a single function 
-that returns a model object.  
+that returns a :class:`fit_neuron.optimize.neuron_base_obj.Neuron` object.  
 
 Using Model Objects 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -62,127 +62,51 @@ The value returned is the new value of the membrane voltage.
 Creating Neurons from Scratch
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Typically, a user will estimate models from data using the :func:`fit_neuron.optimize.fit_gLIF.fit_neuron` function 
+(which can be saved for future use using :mod:`pickle`) and hence does not need to know how to instanciate model instances 
+from parameters only.  The following plot and source code illustrates how a neuron can be loaded directly from 
+parameter arrays.  The meaning of the parameters is explained in :ref:`subthresh_overview` and :ref:`thresh_overview`.
+
+.. plot:: 
+
+	from fit_neuron.optimize import Voltage, StochasticThresh, sic_lib, Neuron
+	from numpy import array,zeros, arange
+	import pylab 
+	
+	t_bins = [0.0001,0.001,0.01,0.1]
+	dt = 0.0001
+	sic_list = [sic_lib.StepSic(t,dt=dt) for t in t_bins]
+	param_arr = array([-0.015, -1.0, 1000000000.0,-0.01,0.005,-0.2,-0.1])
+	thresh_param = array([1.2,56.0,-0.08,-0.05,-0.05,-0.04])
+	subthresh_obj = Voltage(param_arr=param_arr, sic_list=sic_list, dt=dt, Vr=-70, t_ref=0.004)
+	thresh_obj = StochasticThresh(t_bins=t_bins,dt=dt,thresh_param=thresh_param)
+	neuron = Neuron(subthresh_obj=subthresh_obj,thresh_obj=thresh_obj,V_init=-70)
+	
+	v_arr = zeros( (500) )
+	
+	for ind in range(500):
+		V_new = neuron.update(1E-10)
+		v_arr[ind] = V_new 
+	
+	t_arr = dt * arange(500)
+	pylab.plot(t_arr,v_arr)
+	pylab.xlabel("Time (s)")
+	pylab.ylabel("Voltage (mV)")
+	pylab.title("Response to Test Current")
+	pylab.show() 
+
 Running a Test Script 
 -----------------------------
 
-To run a test script, do the following:: 
-
+To run a test script which estimates a model from data, execute the following
+at the command line:: 
+	
 	python -m fit_neuron.tests.test
 
-
-Contents of Test Script 
----------------------------
-
-This script documents much of the package's functionality::
-
-	import os
-	import pickle
-	import warnings
-	import json
-	from fit_neuron import evaluate
-	from fit_neuron.data import load_neuron_data
-	import fit_neuron.optimize
-	from fit_neuron.optimize import sic_lib
-	
-	T_BIN_DEFAULT = [0.0001,0.0002,0.0003,0.0004,0.0005,0.0006,0.0008,0.001,0.00125,0.0015,0.002,0.003,0.004,0.005,0.01,0.015,0.02,0.025,0.03,0.05,0.08,0.1,0.15,0.2,0.25,0.3,0.35,0.4,0.45,0.5,0.7,0.9,1.2]
-	
-	# where the outputs of optimization (figures, json files,...) will be saved
-	OUTPUT_DIR = "test_output_figures"
-	
-	def run_single_test(output_dir=OUTPUT_DIR):
-	    
-	    if not os.path.exists(output_dir):
-	        os.makedirs(output_dir) 
-	    
-	    for neuron_num in range(1,13):
-	        
-	        # -------------- LOADING DATA  -----------------
-	        
-	        # if my_input_type is set to "noise_only" then only load noisy inputs
-	        my_input_type = "noise_only"
-	        (file_id_list,input_current_list,membrane_voltage_list,dt) = load_neuron_data(neuron_num,
-	                                                                                      input_type=my_input_type,
-	                                                                                      max_file_ct=6) 
-	        if len(input_current_list) == 0: 
-	            warnings.warn("No data was loaded! Check data loading function")
-	            continue
-	        
-	        # -------------- RUNNING OPTIMIZATION  -----------------
-	        
-	        t_bins = T_BIN_DEFAULT
-	        sic_list = [sic_lib.StepSic(t,dt=dt) for t in t_bins]
-	        volt_nonlin_fcn = None 
-	               
-	        neuron = fit_neuron.optimize.fit_neuron(input_current_list=input_current_list,
-	                                         membrane_voltage_list=membrane_voltage_list,
-	                                         dt=dt,
-	                                         process_ct=None,
-	                                         max_lik_iter_max=25,
-	                                         stopping_criteria=0.01,
-	                                         sic_list=sic_list,
-	                                         volt_nonlin_fcn = volt_nonlin_fcn
-	                                         )
-	
-	        # -------------- SAVING RESULTS  -----------------
-	        
-	        folder_id = "neuron_" + str(neuron_num)
-	        neuron_folder = os.path.join(output_dir,folder_id)
-	        
-	        if not os.path.exists(neuron_folder):
-	            os.makedirs(neuron_folder)
-	        
-	        pickle_file_dir =  os.path.join(neuron_folder,"pickle_files")
-	        
-	        if not os.path.exists(pickle_file_dir):
-	            os.makedirs(pickle_file_dir)
-	        
-	        pickle_file_path = os.path.join(pickle_file_dir,folder_id + ".p")
-	        print "Successfully pickle file to: " + str(pickle_file_path)
-	        
-	        pickle.dump(neuron, open(pickle_file_path,'wb'))
-	        
-	        json_file_dir = os.path.join(neuron_folder,"json_files")
-	        
-	        if not os.path.exists(json_file_dir):
-	            os.makedirs(json_file_dir)
-	        
-	        json_file_path = os.path.join(json_file_dir,folder_id + ".json")
-	        json.dump(neuron.get_param_dict(),open(json_file_path,'wb'),sort_keys = False, indent = 4)
-	        
-	        print "Successfully saved json file to: " + str(json_file_path)
-	
-	        # -------------- PLOTTING OUTPUT FIGURES --------------------
-	
-	        print "Running monte carlo simulations..."
-	        simulated_voltage_dict = evaluate.simulate(neuron=neuron,
-	                                                  input_current_list=input_current_list,
-	                                                  membrane_voltage_list=membrane_voltage_list,
-	                                                  file_id_list=file_id_list,
-	                                                  reps=10)
-	                
-	        bio_voltage_dict = dict(zip(file_id_list,membrane_voltage_list))
-	        input_current_dict = dict(zip(file_id_list,input_current_list))
-	
-	        figure_dir = os.path.join(neuron_folder,"figures")
-	        
-	        if not os.path.exists(figure_dir):
-	            os.makedirs(figure_dir)
-	
-	        # plots simulation results in a specified directory
-	        evaluate.plot_sim_vs_real(simulated_voltage_dict=simulated_voltage_dict,
-	                                  bio_voltage_dict=bio_voltage_dict,
-	                                  input_current_dict=input_current_dict,
-	                                  fig_dir=figure_dir)
-	        
-	        stats_dir = os.path.join(neuron_folder,"stats")
-	        
-	        if not os.path.exists(stats_dir):
-	            os.makedirs(stats_dir)
-	        
-	        evaluate.plot_spk_performance_metrics(bio_voltage_dict,simulated_voltage_dict,fig_dir=stats_dir)
-	        
-	if __name__ == '__main__':
-	    run_single_test()
+The contents of this script can be viewed at :mod:`fit_neuron.tests.test` and document
+much of this package's functionality.  The script will estimate the parameters for 
+a neuron, save the parameters in a JSON file, save a model instance with :mod:`pickle`, plots and saves
+simulation figures, and plots and saves evaluation figures.   
     
 .. note:: 
 	By default, :func:`fit_neuron.tests.test.run_single_test` will save the output figures 

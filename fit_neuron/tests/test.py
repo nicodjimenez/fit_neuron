@@ -1,7 +1,6 @@
 import os
 import pickle
 import json
-import cProfile
 from fit_neuron import evaluate
 from fit_neuron.data import load_neuron_data
 import fit_neuron.optimize
@@ -21,7 +20,8 @@ def test_fit_neuron(output_dir=OUTPUT_DIR,neuron_num = 1):
     
     .. note:: 
         The output JSON files will contain a dictionary of parameter values.  
-        The output pickle file will contain a neuron **object** which can simulate the artificial neuron.
+        The output pickle file will contain a :mod:`fit_neuron.optimize.neuron_base_obj.Neuron` instance 
+        which can simulate the artificial neuron.
     """
     
     if not os.path.exists(output_dir):
@@ -37,7 +37,6 @@ def test_fit_neuron(output_dir=OUTPUT_DIR,neuron_num = 1):
     
     t_bins = T_BIN_DEFAULT
     sic_list = [sic_lib.StepSic(t,dt=dt) for t in t_bins]
-    volt_nonlin_fcn = None 
            
     neuron = fit_neuron.optimize.fit_neuron(input_current_list=input_current_list,
                                      membrane_voltage_list=membrane_voltage_list,
@@ -45,8 +44,7 @@ def test_fit_neuron(output_dir=OUTPUT_DIR,neuron_num = 1):
                                      process_ct=None,
                                      max_lik_iter_max=25,
                                      stopping_criteria=0.01,
-                                     sic_list=sic_list,
-                                     volt_nonlin_fcn = volt_nonlin_fcn)
+                                     sic_list=sic_list)
 
     # -------------- SAVING RESULTS  -----------------
     
@@ -84,11 +82,7 @@ def test_eval_sav_results(output_dir=OUTPUT_DIR,neuron_num=1):
     :param output_dir: directory where JSON files and pickle files summarizing fitting results have be saved.
     :param neuron_num: number of neuron we want to evaluate (number ranges from 1 to 12)
     
-    .. note:: 
-        The output JSON files will contain a dictionary of parameter values.  
-        The output pickle file will contain a neuron **object** which can simulate the artificial neuron.
-    
-    .. warn:: 
+    .. warning:: 
         This function will not work unless :func:`test_fit_neuron` has 
         already been run before.  
     """
@@ -139,7 +133,6 @@ def test_eval_sav_results(output_dir=OUTPUT_DIR,neuron_num=1):
     evaluate.plot_spk_performance_metrics(bio_voltage_dict,simulated_voltage_dict,fig_dir=stats_dir)
     
 if __name__ == '__main__':
-    cProfile.run('test_fit_neuron()', 'restats_fortran') 
-    #test_fit_neuron()
-    #test_eval_sav_results()
+    test_fit_neuron()
+    test_eval_sav_results()
 

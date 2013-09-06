@@ -4,6 +4,8 @@ A Guide to the Optimize Package
 
 .. Contents::
 
+.. _overview:
+
 Overview
 -------------------
 
@@ -127,6 +129,8 @@ When calling the optimization routine :func:`fit_neuron.optimize.fit_gLIF.fit_ne
 any spike induced object he/she would like, as long as the user defines the class 
 of the spike triggered current to inherit from the following abstract class: :class:`fit_neuron.optimize.sic_lib.SicBase`.
 
+.. _thresh_eq:
+
 Threshold Equations 
 -------------------------
 
@@ -146,8 +150,12 @@ are:
 	
 When the neuron spikes, the voltage chasing currents are set to the reset potential: 
 
-.. math: 
+.. math:: 
 	Q_i \gets V_r
+	
+The hazard rate is computed at each time step and compared to a uniformly distributed random number to 
+determine whether the neuron spikes here.  This computation is performed by 
+:meth:`fit_neuron.optimize.threshold.StochasticThresh.update_X_arr`.   
 	
 Fitting Procedure Overview
 -------------------------------
@@ -162,6 +170,8 @@ The parameter estimation algorithm provided by the :func:`fit_neuron.optimize.fi
 #. Fit the threshold parameters such that these parameters maximize the log likelihood of the obseved 
    spike trains being emitted by the simulated voltage traces.
    
+.. _subthresh_overview:
+
 Subthreshold Fitting Procedure Overview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The subthreshold parameters are obtained via linear regression to 
@@ -203,13 +213,22 @@ vector chosen for the subthreshold object :class:`fit_neuron.optimize.subthresho
 	If no voltage nonlinearity is provided, or if it is set to :attr:`None`, the parameter 
 	vector will still correspond to the :math:`b` vector above but with the voltage nonlinearity skipped.
 
+.. _thresh_overview:
+
 Threshold Fitting Procedure Overview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The threshold parameters are obtained via max likelihood of the observed spike train.  Following 
-along the lines of [MS2011]_ we may re-write the threshold equations as follows: 
+along the lines of [MS2011]_ we may re-write the threshold equation in :ref:`thresh_eq` as follows: 
 
 .. math:: 
 	h(t) = \exp \left({\bf w}_t^{\top} {\bf X}_t (t) \right)
+
+where 
+
+.. math:: 
+	{\bf X}_t (t) = [1,V(t),I_1(t),\hdots,I_m(t),Q_1(t),\hdots,Q_l(t)]^{\top}.
+
+as computed by :meth:`fit_neuron.optimize.threshold.StochasticThresh.update_X_arr`.
 
 The probability of there being a spike in a time increment :math:`dt` is 
 
