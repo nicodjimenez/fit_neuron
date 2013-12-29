@@ -81,7 +81,6 @@ class StochasticThresh():
     :param dt: time step.
     :keyword t_bins: a list that defines the :math:`b_i` that define indicator functions :math:`I_{[0,b_i]}(t)` (see below).  
     :keyword volt_adapt_time_const: a list that defines the time constants :math:`r_i` of the voltage chasing currents (see below).
-    :keyword t_hist: spiking history of neuron, how long ago were the last spikes? 
     
     The stochastic neuron has the following *hazard rate*: 
     
@@ -440,6 +439,7 @@ def estimate_thresh_parameters(subthresh_obj,
     
     log_l = compute_log_likelihood(X_thresh_list,spike_ind_list,thresh_param)
     print "Log likelihood: " + str(log_l)
+    
     return thresh_param
                     
 

@@ -13,6 +13,7 @@ Contents:
 
    user
    developer
+   tutorial_easy
    tutorial
    overview
 

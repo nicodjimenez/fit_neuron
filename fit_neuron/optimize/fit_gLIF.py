@@ -24,8 +24,10 @@ T_BIN_DEFAULT = [0.0001,0.0002,0.0003,0.0004,0.0005,0.0006,0.0008,0.001,0.00125,
 # defines time constants of voltage chasing currents
 TIME_CONST_DEFAULT = [1]
 
+# default voltage nonlinearity function
 NONLIN_FCN_DICT_DEFAULT = None 
 
+# default time constants for spike induced currents (units of inverse seconds)
 K_VECTOR_DEFAULT = [10,25,50,75,100,150,200]
             
 def fit_neuron(input_current_list=None,
@@ -65,27 +67,37 @@ def fit_neuron(input_current_list=None,
     if len(t_thresh_bins) == 0: 
         t_thresh_bins = T_BIN_DEFAULT 
     
+    # organize training data in nice data structure
     raw_data = RawData(input_current_list=input_current_list,
                    membrane_voltage_list=membrane_voltage_list,
                    dt=dt)
 
-    
+    # estimates refractory period and reset potential from data
     spike_shapes = data.compute_spike_shapes(raw_data,look_behind=look_behind)
     t_ref = data.compute_t_ref(spike_shapes,dt)
     Vr = data.compute_Vr(spike_shapes,t_ref,dt)
     
+    # estimates subthreshold model
     subthresh_obj = subthreshold.Voltage(sic_list=sic_list,
                                          volt_nonlin_fcn=volt_nonlin_fcn, 
                                          dt=dt, 
                                          Vr=Vr, 
                                          t_ref=t_ref)
     
+    # removes spike shapes from data so we can estimate threshold parameters
     processed_data = data.raw_2_processed(raw_data,look_behind=look_behind)
     
+    # estimate subthreshold parameters
     subthresh_param_arr = subthreshold.estimate_volt_parameters(subthresh_obj, processed_data)
     
-    #print "Subthresh arr: " + str(subthresh_param_arr)
+    # sets subthreshold parameters
     subthresh_obj.set_param(subthresh_param_arr)
+    
+    # compute the resting potential of the neuron
+    subthresh_obj.estimate_V_rest()
+    
+    #print "V rest", subthresh_obj.V_rest
+    #print "V reset", subthresh_obj.Vr
         
     thresh_obj = threshold.StochasticThresh(t_bins=t_thresh_bins,
                                             volt_adapt_time_const=volt_adapt_time_const,
@@ -97,8 +109,7 @@ def fit_neuron(input_current_list=None,
                                                             process_ct=process_ct,
                                                             max_lik_iter_max=max_lik_iter_max,
                                                             thresh_param_init=thresh_param_init,
-                                                            stopping_criteria=stopping_criteria,
-                                                            )
+                                                            stopping_criteria=stopping_criteria)
     thresh_obj.set_param(thresh_param_arr)
     
     neuron = Neuron(subthresh_obj=subthresh_obj,

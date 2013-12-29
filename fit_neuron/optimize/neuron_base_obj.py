@@ -7,7 +7,11 @@ class Neuron():
     def __init__(self,subthresh_obj=None,thresh_obj=None,V_init=None):
         self._subthresh_obj = subthresh_obj
         self._thresh_obj = thresh_obj
-        self.V = V_init
+        
+        if V_init == None:
+            self.V = subthresh_obj.V_rest
+        else:
+            self.V = V_init
         
     def reset(self,V_init=None,**kwargs):
         """
@@ -17,7 +21,14 @@ class Neuron():
         
         :param V_init: initial value of voltage
         """
-        self.V = V_init
+        
+        # if specified, use starting V value
+        if V_init != None:
+            self.V = V_init
+        else: 
+            # if not specified, just use resting potential of neuron
+            self.V = self._subthresh_obj.V_rest
+            
         self._subthresh_obj.reset()
         self._thresh_obj.reset()
     

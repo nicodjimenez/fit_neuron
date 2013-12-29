@@ -1,4 +1,4 @@
-Tutorial
+Tutorial (hard)
 =====================
 
 .. Contents:: 

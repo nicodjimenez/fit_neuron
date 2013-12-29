@@ -17,6 +17,7 @@ class Voltage():
     :keyword sic_list: list of :class:`fit_neuron.optimize.sic_lib.SicBase` instances.
     :keyword volt_nonlin_fcn: voltage nonlinearity function.
     :keyword Vr: reset value of the voltage following a spike and a refractory period.
+    :keyword V_rest: voltage resting value
     :keyword t_ref: length of refractory period in seconds.
     :keyword dt: time increment.
         
@@ -50,7 +51,8 @@ class Voltage():
                  sic_list=[],
                  volt_nonlin_fcn=None,
                  dt=0.0001,
-                 Vr=-70,
+                 Vr=-70.0,
+                 V_rest=-75.0,
                  t_ref=0.004):
         
         [sic.reset() for sic in sic_list]
@@ -68,8 +70,11 @@ class Voltage():
         #: time step
         self.dt = dt
         
-        #: reset potential
+        #: reset potential (post spike)
         self.Vr = Vr
+        
+        #: resting potential 
+        self.V_rest = V_rest
                 
         #: refractory period after each spike during which the neuron will
         #: have a value of numpy.nan
@@ -121,7 +126,7 @@ class Voltage():
         the value of the voltage at the next time step.  If the neuron is 
         not currently is a spiking state, the method will return a float. 
         If the neuron is in a spiking state, the method will return a :class:`numpy.nan`. 
-        value.
+        value.  The values are updated acccording to the object's :attr:`dt` attribute. 
         """
         
         if self.is_spiking:
@@ -178,20 +183,43 @@ class Voltage():
         X_subthresh = np.concatenate(([V,1,Ie],cur_volt_nonlin,spike_currents))
         return X_subthresh
     
-    def set_param(self,param_arr):
+    def estimate_V_rest(self,t_wait=1.0):
         """
-        Method to be called after :func:`estimate_volt_parameters` has 
-        found an optimal set of parameters.  The method saves the input
-        arrays as its :attr:`param_arr` attribute and parses this array
-        as a dictionary and saves it as the instance's 
-        :attr:`param_dict` attribute.  
+        Estimates resting potential of neuron by letting the neuron respond 
+        to zero input for a specified amount of time. 
         
-        :param param_arr: array of subthreshold parameter values.
+        :param t_wait: number of seconds to wait for voltage to go to resting state
         """
+        
+        self.reset()
+        
+        # number of intervals over which we will simulate
+        interval_ct = int(round(t_wait / self.dt))
+        
+        # we initialize the potential of the neuron at a particular value
+        V = self.V_rest
+        
+        for _ in range(interval_ct):
+            V = self.update(Ie=0.0,V=V)
+        
+        self.V_rest = V
+        return self.V_rest
+    
+    def calc_param_dict(self):
+        """
+        The method uses the object's :attr:`param_arr` attribute and parses this array
+        as a dictionary and saves it as the instance's :attr:`param_dict` attribute.  
+        This dictionary is also returned to the caller. 
+        """
+        
+        param_arr = self.param_arr
+        V_rest = self.V_rest
+        
         param_dict = {'full_param_arr':list(param_arr),
                       'v_param':param_arr[0],
                       '1_param':param_arr[1],
-                      'Ie_param':param_arr[2]}
+                      'Ie_param':param_arr[2],
+                      'V_rest':V_rest}
         
         if self.volt_nonlin_fcn != None: 
             param_dict.update({'nonlin_param':param_arr[3]})
@@ -199,8 +227,18 @@ class Voltage():
         else: 
             param_dict.update({'sic_param_list':list(param_arr[3:])})
             
-        self.param_arr = param_arr
         self.param_dict = param_dict
+        
+        return param_dict
+    
+    def set_param(self,param_arr):
+        """
+        Method to be called after :func:`estimate_volt_parameters` has 
+        found an optimal set of parameters.  
+        
+        :param param_arr: array of subthreshold parameter values.
+        """
+        self.param_arr = param_arr
     
 def setup_regression(subthresh_obj,sweep):
     
@@ -293,4 +331,6 @@ def estimate_volt_parameters(subthresh_obj,processed_data):
     param_arr  = np.linalg.lstsq(X,Y)[0]
 
     return param_arr 
+
+
     
