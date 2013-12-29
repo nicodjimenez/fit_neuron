@@ -20,4 +20,6 @@ fit_neuron.egg-info/
 other/
 test_output_figures/
 profile.txt
+fit_neuron/data/DataTextFiles/
+
 
