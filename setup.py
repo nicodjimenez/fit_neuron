@@ -10,7 +10,7 @@ def read(fname):
 
 setup(
     name = "fit_neuron",
-    version = "0.0.4",
+    version = "0.0.5",
     author = "Nicolas D. Jimenez",
     author_email = "nicodjimenez@gmail.com",
 	packages=['fit_neuron','fit_neuron.data','fit_neuron.optimize','fit_neuron.evaluate','fit_neuron.tests'],
