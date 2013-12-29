@@ -25,7 +25,7 @@ class gLIF_model():
         self.is_fitted = False
         self.neuron = None
         
-    def predict(self,X_list,dt=0.0001):
+    def predict(self,X_list):
         """
         Given new input current, predict the output of the neuron.
         """

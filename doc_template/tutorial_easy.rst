@@ -30,7 +30,7 @@ For more information on loading data, see :func:`fit_neuron.data.data_loader.loa
 		model.fit(X_list, Y_list, dt)
 		
 		# predict data via model
-		Y_pred_list = model.predict(X_list, dt)
+		Y_pred_list = model.predict(X_list)
 		
 		# plot predicted data vs actual data for the first voltage trace in X_list
 		t_arr = dt * np.arange(len(Y_pred_list[0]))

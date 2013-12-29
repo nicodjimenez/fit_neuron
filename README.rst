@@ -2,19 +2,19 @@
 fit_neuron
 =============
 
-**fit_neuron** is a python package for the fast estimation of generalized integrate and fire neural models 
+**fit_neuron** is an easy to use python package for the fast estimation of generalized integrate and fire neural models 
 from patch clamp electrophysiological recordings.  The optimization routines implements a fitting procedure 
-described in [RB2005]_ and [MS2011]_.  These routines can estimate the models described in [RB2005]_, [MN2009]_, and [MS2011]_.  
+described in [RB2005]_ and [MS2011]_.  The package includes an easy to use interface similar to scikit-learn for fitting models to data and then making predictions with the fitted models.  The routines used can estimate the models described in [RB2005]_, [MN2009]_, and [MS2011]_.  
 As described in depth in the documentation, the subthreshold 
 parameters are estimated using linear regression and the threshold parameters are estimated 
 using maximum likelihood.  The fitting routine is built for speed: it estimates neuron parameters for 10 seconds of data 
 in about 50 seconds on a quad core Asus laptop.  *fit_neuron* also contains efficient implementations 
 of the following spike distance measures: Victor-Purpura [DA2003]_, van Rossum [VR2001]_, Schrieber [SS2003]_, and Gamma [RJ2008]_
 which can be used to evaluate the accuracy of estimated models, as well as provide measures 
-of synchrony between spike trains.    
+of synchrony between spike trains.  
 
-:Date: 2013-08-10
-:Version: 0.0.3
+:Date: 2013-12-28
+:Version: 0.0.5
 :Authors: - Nicolas D. Jimenez
 
 Links 
@@ -31,7 +31,7 @@ and fast review of pull requests is guaranteed.
 
 3)  **Documentation**   
 
-Sphinx documentation is available at: http://pythonhosted.org/fit_neuron/.
+Sphinx documentation for this package is available at: http://pythonhosted.org/fit_neuron/.
 
 
 Dependencies
@@ -71,8 +71,15 @@ The data for the fit_neuron package is then installed as follows::
 	
 Testing
 ------------
+There are two testing scripts that may be used.  Both scripts are 
+described in the documentation (http://pythonhosted.org/fit_neuron/).
 
-The main testing script for fit_neuron can be run as follows:: 
+The first script is far simpler and easier to understand but is less configurable::
+
+	python -m fit_neuron.tests.test_model
+
+
+The more complicated and configurable testing script for fit_neuron can be run as follows:: 
 
 	python -m fit_neuron.tests.test
 
