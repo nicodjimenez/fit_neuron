@@ -1,1 +1,22 @@
+# file extensions
+*.project 
+*.pydevproject 
+*.zip
 *.pyc 
+*~
+*.txt
+*.png
+*.html 
+
+# unwanted directories
+.svn/
+.metadata/ 
+README.html 
+build/
+dist/
+docs/ 
+fit_neuron.egg-info/
+other/
+test_output_figures/
+profile.txt
+
