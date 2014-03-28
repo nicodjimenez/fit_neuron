@@ -150,17 +150,17 @@ Another Monte Carlo simulation:
    :height: 200px
    :width: 300px	
 
-Here are some figures showing values of the Schrieber similarity measure 
+Here are some figures showing values of the Schreiber similarity measure 
 for different values of the bandwidth of the Gaussian kernel :math:`\sigma`.
 
 Fitting results for neuron_1: 
 
-.. image:: neuron_1/stats/schrieber_similarity_stim14_rep0.png
+.. image:: neuron_1/stats/schreiber_similarity_stim14_rep0.png
    :height: 200px
    :width: 300px	
 
 Another Monte Carlo simulation: 
 
-.. image:: neuron_1/stats/schrieber_similarity_stim14_rep1.png
+.. image:: neuron_1/stats/schreiber_similarity_stim14_rep1.png
    :height: 200px
    :width: 300px	
