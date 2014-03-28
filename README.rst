@@ -9,7 +9,7 @@ As described in depth in the documentation, the subthreshold
 parameters are estimated using linear regression and the threshold parameters are estimated 
 using maximum likelihood.  The fitting routine is built for speed: it estimates neuron parameters for 10 seconds of data 
 in about 50 seconds on a quad core Asus laptop.  *fit_neuron* also contains efficient implementations 
-of the following spike distance measures: Victor-Purpura [DA2003]_, van Rossum [VR2001]_, Schrieber [SS2003]_, and Gamma [RJ2008]_
+of the following spike distance measures: Victor-Purpura [DA2003]_, van Rossum [VR2001]_, Schreiber [SS2003]_, and Gamma [RJ2008]_
 which can be used to evaluate the accuracy of estimated models, as well as provide measures 
 of synchrony between spike trains.  
 
